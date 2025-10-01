@@ -1,0 +1,94 @@
+name: Multi-OS System Info Workflow
+
+on:
+  push:
+
+jobs:
+  ubuntu-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Print system information
+        run: |
+          echo "Running on Ubuntu"
+          uname -a
+          lsb_release -a || true
+
+      - name: Capture metadata
+        run: |
+          echo "Commit SHA: $GITHUB_SHA" > metadata.txt
+          echo "Repository: $GITHUB_REPOSITORY" >> metadata.txt
+          echo "Workspace: $GITHUB_WORKSPACE" >> metadata.txt
+
+      - name: Upload metadata artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu-metadata
+          path: metadata.txt
+
+      # ✅ Conditional step - runs only on main branch
+      - name: Run only on main branch
+        if: github.ref == 'refs/heads/main'
+        run: echo "This step runs only on main branch"
+
+      # ✅ Conditional step - runs only if previous step fails
+      - name: Run if previous step failed
+        if: failure()
+        run: echo "Previous step failed, running this recovery step"
+
+      # ✅ Conditional step - always runs regardless of outcome
+      - name: Always run
+        if: always()
+        run: echo "This step always runs no matter what"
+
+  macos-job:
+    runs-on: macos-latest
+    needs: ubuntu-job
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Print system information
+        run: |
+          echo "Running on macOS"
+          uname -a
+          sw_vers
+
+      - name: Capture metadata
+        run: |
+          echo "Commit SHA: $GITHUB_SHA" > metadata.txt
+          echo "Repository: $GITHUB_REPOSITORY" >> metadata.txt
+          echo "Workspace: $GITHUB_WORKSPACE" >> metadata.txt
+
+      - name: Upload metadata artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-metadata
+          path: metadata.txt
+
+  windows-job:
+    runs-on: windows-latest
+    needs: ubuntu-job
+    if: always()   # ensures Windows runs even if Ubuntu fails
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Print system information
+        run: |
+          echo "Running on Windows"
+          systeminfo
+
+      - name: Capture metadata
+        run: |
+          echo Commit SHA: %GITHUB_SHA% > metadata.txt
+          echo Repository: %GITHUB_REPOSITORY% >> metadata.txt
+          echo Workspace: %GITHUB_WORKSPACE% >> metadata.txt
+
+      - name: Upload metadata artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-metadata
+          path: metadata.txt
