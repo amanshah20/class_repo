@@ -1,0 +1,19 @@
+name: Repository Events
+
+on:
+  push:
+  pull_request:
+    types: [opened, reopened, closed]
+  issues:
+    types: [opened, closed]
+
+jobs:
+  checkout-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print GitHub context
+        run: |
+          echo $GITHUB_SHA
+          echo $GITHUB_REF
+      - name: Checkout code
+        uses: actions/checkout@v5
