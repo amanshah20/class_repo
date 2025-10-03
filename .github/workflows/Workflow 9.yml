@@ -1,0 +1,12 @@
+name: Workflow Run
+on:
+    workflow_run:
+        workflows: ["Repository Events"]
+        types:
+        - completed
+
+jobs:
+    demo-job:
+        runs-on: ubuntu-lates
+        steps:
+            - run: echo "This is a demo job triggered by the competion of 'Repository Events' Workflow."
