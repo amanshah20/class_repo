@@ -1,0 +1,87 @@
+name: Multi-Event Context Workflow
+
+on:
+  push:
+  pull_request:
+  issues:
+
+jobs:
+  # ------------------------------
+  # Job 1: Handle Push Events
+  # ------------------------------
+  on-push:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Echo push event context
+        run: |
+          echo "Event Name: ${{ github.event_name }}" > push_event.txt
+          echo "Repository: ${{ github.repository }}" >> push_event.txt
+          echo "Branch: ${{ github.ref }}" >> push_event.txt
+          echo "Commit SHA: ${{ github.sha }}" >> push_event.txt
+          echo "Pusher: ${{ github.actor }}" >> push_event.txt
+          echo "Message: ${{ github.event.head_commit.message }}" >> push_event.txt
+          cat push_event.txt
+
+      - name: Upload push event details
+        uses: actions/upload-artifact@v4
+        with:
+          name: push-event-details
+          path: push_event.txt
+
+  # ------------------------------
+  # Job 2: Handle Pull Request Events
+  # ------------------------------
+  on-pull-request:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Echo pull request context
+        run: |
+          echo "Event Name: ${{ github.event_name }}" > pull_request_event.txt
+          echo "Repository: ${{ github.repository }}" >> pull_request_event.txt
+          echo "PR Title: ${{ github.event.pull_request.title }}" >> pull_request_event.txt
+          echo "PR Number: ${{ github.event.pull_request.number }}" >> pull_request_event.txt
+          echo "PR User: ${{ github.event.pull_request.user.login }}" >> pull_request_event.txt
+          echo "Base Branch: ${{ github.event.pull_request.base.ref }}" >> pull_request_event.txt
+          echo "Head Branch: ${{ github.event.pull_request.head.ref }}" >> pull_request_event.txt
+          cat pull_request_event.txt
+
+      - name: Upload pull request event details
+        uses: actions/upload-artifact@v4
+        with:
+          name: pull-request-event-details
+          path: pull_request_event.txt
+
+  # ------------------------------
+  # Job 3: Handle Issue Events
+  # ------------------------------
+  on-issue:
+    if: github.event_name == 'issues'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Echo issue event context
+        run: |
+          echo "Event Name: ${{ github.event_name }}" > issue_event.txt
+          echo "Repository: ${{ github.repository }}" >> issue_event.txt
+          echo "Issue Number: ${{ github.event.issue.number }}" >> issue_event.txt
+          echo "Issue Title: ${{ github.event.issue.title }}" >> issue_event.txt
+          echo "Issue State: ${{ github.event.issue.state }}" >> issue_event.txt
+          echo "Opened By: ${{ github.event.issue.user.login }}" >> issue_event.txt
+          echo "Action Type: ${{ github.event.action }}" >> issue_event.txt
+          cat issue_event.txt
+
+      - name: Upload issue event details
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-event-details
+          path: issue_event.txt
