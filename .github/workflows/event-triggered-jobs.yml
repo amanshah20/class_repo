@@ -1,0 +1,57 @@
+# .github/workflows/event-triggered-jobs.yml
+name: Event-triggered jobs
+on:
+  push:
+  pull_request:
+  issues:
+
+jobs:
+  push-job:
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Echo push context and write file
+        run: |
+          echo "Event: push" > event-push.txt
+          echo "Ref: $GITHUB_REF" >> event-push.txt
+          echo "Actor: $GITHUB_ACTOR" >> event-push.txt
+          echo "Commit: $GITHUB_SHA" >> event-push.txt
+          cat event-push.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: event-push
+          path: event-push.txt
+
+  pr-job:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Echo PR context and write file
+        run: |
+          echo "Event: pull_request" > event-pr.txt
+          echo "PR number: ${{ github.event.number }}" >> event-pr.txt
+          echo "PR title: ${{ github.event.pull_request.title }}" >> event-pr.txt
+          echo "Actor: $GITHUB_ACTOR" >> event-pr.txt
+          cat event-pr.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: event-pr
+          path: event-pr.txt
+
+  issues-job:
+    if: ${{ github.event_name == 'issues' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write issue context
+        run: |
+          echo "Event: issues" > event-issue.txt
+          echo "Action: ${{ github.event.action }}" >> event-issue.txt
+          echo "Issue number: ${{ github.event.issue.number }}" >> event-issue.txt
+          echo "Issue title: ${{ github.event.issue.title }}" >> event-issue.txt
+          cat event-issue.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: event-issue
+          path: event-issue.txt
