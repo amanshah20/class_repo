@@ -1,0 +1,26 @@
+# .github/workflows/reusable.yml
+name: reusable-env-printer
+on:
+  workflow_call:
+    inputs:
+      message:
+        required: true
+        type: string
+    outputs:
+      echoed:
+        description: "Echoed message"
+        value: ${{ steps.echo.outputs.echoed }}
+
+jobs:
+  print-env:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print env details
+        run: |
+          echo "Runner OS: $RUNNER_OS"
+          echo "GitHub Repository: $GITHUB_REPOSITORY"
+      - id: echo
+        name: Echo input
+        run: |
+          echo "Echoed: ${{ inputs.message }}"
+          echo "echoed=${{ inputs.message }}" >> $GITHUB_OUTPUT
