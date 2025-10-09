@@ -1,0 +1,31 @@
+# .github/workflows/workflow_run_trigger.yml
+name: Run on workflow_run success
+on:
+  workflow_run:
+    workflows: ["Tri-platform jobs + artifact + conditionals", "Node matrix across OS", "Another workflow name"]
+    types:
+      - completed
+
+jobs:
+  verify:
+    # only run if the triggering workflow concluded with success
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run verification script
+        run: |
+          echo "Triggered by workflow: ${{ github.event.workflow_run.name }}"
+          echo "Conclusion: ${{ github.event.workflow_run.conclusion }}"
+          # Dummy verification; replace with your script
+          echo "Verifying repository..." > verify.txt
+          echo "Verification OK at $(date -u)" >> verify.txt
+          cat verify.txt
+
+      - name: Upload verification result
+        uses: actions/upload-artifact@v4
+        with:
+          name: verify-result
+          path: verify.txt
