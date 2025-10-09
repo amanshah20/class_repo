@@ -1,0 +1,28 @@
+# .github/workflows/node-matrix.yml
+name: Node matrix across OS
+on:
+  push:
+    branches: ["**"]
+
+jobs:
+  node-matrix:
+    strategy:
+      matrix:
+        node: [16, 18, 20]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Print environment details
+        run: |
+          echo "Matrix run: node=${{ matrix.node }} os=${{ matrix.os }}"
+          node --version || echo "no node"
+          uname -a || systeminfo || sw_vers || true
