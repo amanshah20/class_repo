@@ -1,0 +1,46 @@
+# .github/workflows/artifact-produce-consume.yml
+name: Produce / consume artifact within same workflow
+on:
+  push:
+
+jobs:
+  producer:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-name: produced-artifact
+    steps:
+      - name: Create a file
+        run: |
+          echo "Initial data created at $(date -u)" > shared.txt
+          echo "producer" >> shared.txt
+          cat shared.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: produced-artifact
+          path: shared.txt
+
+  consumer:
+    needs: producer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: produced-artifact
+
+      - name: Show content and append
+        run: |
+          echo "Contents before append:"
+          cat shared.txt || true
+          echo "Appended by consumer at $(date -u)" >> shared.txt
+          echo "consumer" >> shared.txt
+          echo "Contents after append:"
+          cat shared.txt
+
+      - name: Re-upload modified artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: produced-artifact-modified
+          path: shared.txt
