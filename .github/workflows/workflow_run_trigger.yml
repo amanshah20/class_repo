@@ -1,4 +1,4 @@
-# .github/workflows/workflow_run_trigger.yml
+
 name: Run on workflow_run success
 on:
   workflow_run:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   verify:
-    # only run if the triggering workflow concluded with success
+    
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
