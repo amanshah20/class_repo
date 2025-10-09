@@ -1,0 +1,34 @@
+# .github/workflows/daily-scheduled.yml
+name: Daily scheduled file log + cache example
+on:
+  schedule:
+    # daily at 02:00 UTC (adjust cron as needed)
+    - cron: '0 2 * * *'
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore node cache (example)
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: List files and append timestamp
+        run: |
+          echo "Listing repo at $(date -u)" >> daily-log.txt
+          ls -la >> daily-log.txt
+          echo "------" >> daily-log.txt
+          echo "Appended by workflow run ${GITHUB_RUN_ID} at $(date -u)" >> daily-log.txt
+          tail -n 30 daily-log.txt
+
+      - name: Upload daily log
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-log
+          path: daily-log.txt
