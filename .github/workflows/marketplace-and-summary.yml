@@ -1,0 +1,33 @@
+# .github/workflows/marketplace-and-summary.yml
+name: Marketplace action outputs -> summary file
+on:
+  push:
+
+jobs:
+  action-with-output:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run github-script action to generate output
+        id: gen
+        uses: actions/github-script@v6
+        with:
+          # this action accepts 'script' as input, demonstrate input usage
+          script: |
+            // create a custom summary string and set as output
+            const info = `repo=${process.env.GITHUB_REPOSITORY} sha=${process.env.GITHUB_SHA}`;
+            core.setOutput('summary', info);
+
+      - name: Append action output to summary file
+        run: |
+          echo "Action summary: ${{ steps.gen.outputs.summary }}" >> global-summary.txt
+          echo "Appended:"
+          tail -n 5 global-summary.txt
+
+      - name: Upload summary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: global-summary
+          path: global-summary.txt
