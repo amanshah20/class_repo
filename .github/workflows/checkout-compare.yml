@@ -1,0 +1,41 @@
+# .github/workflows/checkout-compare.yml
+name: Checkout compare (manual git vs actions/checkout)
+on:
+  push:
+
+jobs:
+  compare-checkout:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Manual clone into manual-clone dir
+        run: |
+          git clone --depth=1 https://github.com/${GITHUB_REPOSITORY}.git manual-clone
+          echo "Manual clone listing:" > manual-list.txt
+          (cd manual-clone && git ls-files) >> manual-list.txt
+          echo "--- end manual ---" >> manual-list.txt
+          sed -n '1,40p' manual-list.txt || true
+
+      - name: Use actions/checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Create actions checkout listing
+        run: |
+          git ls-files > actions-list.txt
+          echo "Actions checkout listing saved."
+
+      - name: Compare listings and write diff
+        run: |
+          echo "DIFF between manual-clone and actions/checkout" > diff.log
+          diff -u manual-clone/.gitignore .gitignore || true
+          # compare file lists
+          comm -3 <(sort manual-list.txt) <(sort actions-list.txt) >> diff.log || true
+          echo "=== DIFF END ===" >> diff.log
+          sed -n '1,200p' diff.log || true
+
+      - name: Upload diff artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkout-diff
+          path: diff.log
